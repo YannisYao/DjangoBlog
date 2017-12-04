@@ -1,6 +1,9 @@
 <!--模板继承 -->
 {% extends 'base.html' %}
-    {% block main %}       
+    {% block main %}
+         {% if error_msg %}
+             <p>{{ error_msg }}</p>
+         {% endif %}
 			{% for post in post_list %}
                 <article class="post post-{{ post.pk }}">
                     <header class="entry-header">
@@ -8,11 +11,16 @@
                             <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
                         </h1>
                         <div class="entry-meta">
-                            <span class="post-category"><a href="#">{{ post.catogory }}</a></span>
+                            <span class="post-category"><a href="{% url 'blog:category' post.category.pk %}">{{ post.category.name }}</a></span>
+
+                            {% for tag in post.tags.all %}
+                            <span class="post-tag"><a href="{% url 'blog:tag' tag.pk %}">{{ tag.name }}</a></span>
+                            {% endfor %}
+
                             <span class="post-date"><a href="#"><time class="entry-date"
                                                                       datetime="2012-11-09T23:15:57+00:00">{{  post.create_time }}</time></a></span>
                             <span class="post-author"><a href="#">{{ post.author }}</a></span>
-                            <span class="comments-link"><a href="{{ post.get_absolute_url }}">{{ post.comment_set.count }} 评论</a></span>
+                            <span class="comments-link"><a href="{{ post.get_absolute_url }}#comment-area">{{ post.comment_set.count }} 评论</a></span>
                             <span class="views-count"><a href="{{ post.get_absolute_url }}">{{ post.views }} 阅读</a></span>
                         </div>
                     </header>
@@ -25,22 +33,54 @@
                 </article>
 				{% empty %}
 				<div class="no-post">暂时还没有发布的文章！</div>
+                <!-- ListView 默认实现了分页功能 paginate_by属性
+                 paginator ，即 Paginator 的实例。
+                page_obj ，当前请求页面分页对象。
+                is_paginated，是否已分页。只有当分页后页面超过两页时才算已分页。
+                object_list，请求页面的对象列表，和 post_list 等价。所以在模板中循环文章列表时可以选 post_list ，也可以选 object_list。-->
 				{% endfor %}
-				
+
+			    {% if  is_paginated %}
 				<div class="pagination">
-                    <ul>
-                        <li><a href="">1</a></li>
-                        <li><a href="">...</a></li>
-                        <li><a href="">4</a></li>
-                        <li><a href="">5</a></li>
-                        <li class="current"><a href="">6</a></li>
-                        <li><a href="">7</a></li>
-                        <li><a href="">8</a></li>
-                        <li><a href="">...</a></li>
-                        <li><a href="">11</a></li>
-                    </ul>
+                <!-- 是否显示第一页-->
+                {% if first %}
+                    <a href="?page=1">1</a>
+                {% endif %}
+                <!-- 左边-->
+                {% if left %}
+                    {% if left_has_more %}
+                        <span>...</span>
+                    {% endif %}
+
+                    {%  for i in left %}
+                        <a href="?page={{ i }}">{{ i }}</a>
+                    {% endfor %}
+
+
+                {% endif %}
+               <!-- 当前页 -->
+                <a class="current" href="?page={{ page_obj.number }}" style="color: red">{{ page_obj.number }}</a>
+                <!-- 右边-->
+                {% if right %}
+                    {% for i in right %}
+                        <a href="?page={{ i }}">{{ i }}</a>
+                    {% endfor %}
+
+                    {% if right_has_more %}
+                        <span>...</span>
+                    {% endif %}
+                {% endif %}
+
+                {% if last %}
+                        <a href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
+                {% endif %}
                 </div>
-				
+                {% endif %}
+
+
+
+
+
 	{% endblock main %}
 
                 
