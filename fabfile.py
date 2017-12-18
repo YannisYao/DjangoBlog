@@ -30,7 +30,7 @@ def deploy():
 	#重启Gunicorn
 	sudo('systemctl restart yannis')
 	#重启nginx
-	sudo('service nginx reload')
+	sudo('service nginx restart')
 
 
 
